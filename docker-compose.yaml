@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # api:
+  #   image: api-byte-eats:latest
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "12001:8080"  # Map port 80 in the container to port 5000 on the host
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #     - ConnectionStrings__DefaultConnection=Server=db;Database=byte_eats;User Id=sa;Password=root;
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - app-network
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: ByteEats1
+      ACCEPT_EULA: "Y"
+    ports:
+      - "12000:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  sqlserver-data:
