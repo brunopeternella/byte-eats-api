@@ -13,28 +13,34 @@ stages:
   - stage: PreBuild
     displayName: Pré Build
     jobs:
-      - job: Build
+      - job: BuildAndTest
+        displayName: Build & Test
         steps:
           - task: UseDotNet@2
             displayName: Install .NET SDK
             inputs:
               packageType: 'sdk'
-              version: '8.x'
+              version: '8.x'          
+          - task: DotNetCoreCLI@2
+            displayName: Restore
+            inputs:
+              command: 'restore'
 
-          - script: dotnet build "API.ByteEats/API.ByteEats.csproj" -c Release
-            displayName: Build Project
-
-      - job: Test
-        dependsOn: Build
-        steps:
-          - script: dotnet test
-            displayName: Run Unit Tests
-
+          - task: DotNetCoreCLI@2
+            displayName: Build
+            inputs:
+              command: 'build'
+              projects: 'API.ByteEats/API.ByteEats.csproj'
+              arguments: '-c Release'
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: 'test'
 
   - stage: Build
     displayName: Build
     jobs:
       - job: DockerBuild
+        displayName: Docker Build & Publish
         steps:
           - task: Docker@2
             displayName: Docker Build
@@ -50,14 +56,6 @@ stages:
             inputs:
               script: |
                 docker save byte-eats-api:latest | gzip > ./byte-eats-api-latest.tar.gz
-
-
-  - stage: PosBuild
-    displayName: Pós Build
-    jobs:
-      - job: PublishArtifacts
-        displayName: Publish Artifacts
-        steps:
           - task: PublishPipelineArtifact@1
             inputs:
               targetPath: 'byte-eats-api-latest.tar.gz'
