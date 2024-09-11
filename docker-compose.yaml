@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   api:
-    image: api-byte-eats:latest
+    image: byte-eats-api:latest
     build:
       context: .
       dockerfile: Dockerfile
