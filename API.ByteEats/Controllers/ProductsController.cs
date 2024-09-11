@@ -6,11 +6,8 @@ namespace API.ByteEats.Controllers;
 
 public class ProductsController : ApiController
 {
-    private readonly IMediator _mediator;
-
-    public ProductsController(IMediator mediator)
+    public ProductsController(IMediator mediator) : base(mediator)
     {
-        _mediator = mediator;
     }
 
     [HttpGet]
@@ -22,25 +19,34 @@ public class ProductsController : ApiController
             Id = id
         };
 
-        var product = await _mediator.Send(command);
+        var product = await Mediator.Send(command);
 
-        return Ok(product);
+        if (!product.IsSuccess)
+            return BadRequestNotification();
+
+        return Ok(product.Value);
     }
 
     [HttpGet]
     public async Task<IActionResult> GetProducts([FromQuery] GetProductsQuery command)
     {
-        var products = await _mediator.Send(command);
+        var products = await Mediator.Send(command);
 
-        return Ok(products);
+        if (!products.IsSuccess)
+            return BadRequestNotification();
+
+        return Ok(products.Value);
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand command)
     {
-        var product = await _mediator.Send(command);
+        var product = await Mediator.Send(command);
 
-        return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
+        if (!product.IsSuccess)
+            return BadRequestNotification();
+
+        return CreatedAtAction(nameof(GetProductById), new { id = product.Value.Id }, product.Value);
     }
 
     [HttpPut]
@@ -49,20 +55,28 @@ public class ProductsController : ApiController
     {
         command.Id = id;
 
-        var product = await _mediator.Send(command);
+        var product = await Mediator.Send(command);
 
-        return NoContent();
+        if (!product.IsSuccess)
+            return BadRequestNotification();
+
+        return Ok(product.Value);
     }
 
     [HttpDelete]
     [Route("{id}")]
     public async Task<IActionResult> DeleteProduct([FromRoute] Guid id)
     {
-        var command = new DeleteProductCommand();
-        command.Id = id;
+        var command = new DeleteProductCommand
+        {
+            Id = id
+        };
 
-        var product = await _mediator.Send(command);
+        var product = await Mediator.Send(command);
 
-        return NoContent();
+        if (!product.IsSuccess)
+            return BadRequestNotification();
+
+        return Ok(product.Value);
     }
 }

@@ -14,7 +14,7 @@ public class GetProductsQueryHandler : BaseHandler<GetProductsQuery, PagedResult
     {
     }
 
-    public override async Task<PagedResult<Product>> Handle(GetProductsQuery request,
+    public override async Task<Result<PagedResult<Product>>> Handle(GetProductsQuery request,
         CancellationToken cancellationToken)
     {
         List<Expression<Func<Product, bool>>> filters = new();
@@ -25,8 +25,9 @@ public class GetProductsQueryHandler : BaseHandler<GetProductsQuery, PagedResult
         if(request.Promotion.HasValue)
             filters.Add(product => product.Promotion.Equals(request.Promotion));
 
-        var products = await UnitOfWork.Products.GetAll(request.Page, request.PageSize, filters);
+        var products = await UnitOfWork.Products.GetPagedByFilter(request.Page, request.PageSize, filters);
 
-        return products;
+        return Result<PagedResult<Product>>.Success(products);
+
     }
 }

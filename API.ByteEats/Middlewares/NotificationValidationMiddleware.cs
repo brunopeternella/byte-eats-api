@@ -20,7 +20,10 @@ public class NotificationValidationMiddleware
         var notifications = notificationService.GetNotifications();
         if (notifications.Count > 0)
         {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+
+            if(context.Response.StatusCode != StatusCodes.Status400BadRequest)
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+
             context.Response.ContentType = "application/json";
 
             var response =

@@ -1,5 +1,4 @@
 using API.ByteEats.Domain.Models.OrderCommands;
-using API.ByteEats.Domain.Models.ProductCommands;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,66 +6,76 @@ namespace API.ByteEats.Controllers;
 
 public class OrdersController : ApiController
 {
-    private readonly IMediator _mediator;
-
-    public OrdersController(IMediator mediator)
+    public OrdersController(IMediator mediator) : base(mediator)
     {
-        _mediator = mediator;
     }
 
     [HttpGet]
     [Route("{id}")]
     public async Task<IActionResult> GetOrderById([FromRoute] Guid id)
     {
-        var command = new GetProductByIdQuery
+        var command = new GetOrderByIdQuery
         {
             Id = id
         };
 
-        var order = await _mediator.Send(command);
+        var order = await Mediator.Send(command);
 
-        return Ok(order);
+        if (!order.IsSuccess)
+            return BadRequestNotification();
+
+        return Ok(order.Value);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetOrders([FromQuery] GetProductsQuery command)
+    public async Task<IActionResult> GetOrders([FromQuery] GetOrdersQuery command)
     {
-        var orders = await _mediator.Send(command);
+        var orders = await Mediator.Send(command);
 
-        return Ok(orders);
+        return Ok(orders.Value);
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand command)
     {
-        var order = await _mediator.Send(command);
+        var order = await Mediator.Send(command);
 
-        if (order is null)
-            return NoContent();
+        if (!order.IsSuccess)
+            return BadRequestNotification();
 
-        return CreatedAtAction(nameof(GetOrderById), new { id = order.Id }, order);
+        return CreatedAtAction(nameof(GetOrderById), new { id = order.Value.Id }, order.Value);
     }
 
     [HttpPut]
     [Route("{id}")]
-    public async Task<IActionResult> UpdateOrder([FromRoute] Guid id, [FromBody] UpdateProductCommand command)
+    public async Task<IActionResult> UpdateOrder([FromRoute] Guid id, [FromBody] UpdateOrderCommand command)
     {
         command.Id = id;
 
-        var order = await _mediator.Send(command);
+        var order = await Mediator.Send(command);
 
-        return NoContent();
+        if (!order.IsSuccess)
+            return BadRequestNotification();
+
+        return Ok(order.Value);
     }
 
     [HttpDelete]
     [Route("{id}")]
     public async Task<IActionResult> DeleteOrder([FromRoute] Guid id)
     {
-        var command = new DeleteProductCommand();
-        command.Id = id;
+        var command = new DeleteOrderCommand
+        {
+            Id = id
+        };
 
-        var order = await _mediator.Send(command);
+        var order = await Mediator.Send(command);
 
-        return NoContent();
+        if (!order.IsSuccess)
+            return BadRequestNotification();
+
+        return Ok(order.Value);
     }
+
+
 }

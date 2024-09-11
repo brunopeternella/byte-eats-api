@@ -29,20 +29,14 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEnti
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Id.Equals(id));
     }
-/*
-    public async Task<PagedResult<TEntity>> GetAll(int pageNumber, int pageSize)
-    {
-        return await _context.Set<TEntity>().AsQueryable().ToPagedResultAsync(pageNumber, pageSize);
-    }
-*/
-    public async Task<PagedResult<TEntity>> GetAll(int page, int pageSize,
+
+    public async Task<PagedResult<TEntity>> GetPagedByFilter(int page, int pageSize,
         IEnumerable<Expression<Func<TEntity, bool>>> filters = null,
         Expression<Func<TEntity, object>> orderBy = null,
         bool ascending = true)
     {
         var query = _context.Set<TEntity>().AsQueryable();
 
-        // Combine filters into a single expression
         if (filters != null && filters.Any())
         {
             var combinedFilter = filters.Aggregate((current, next) =>
@@ -51,15 +45,14 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEnti
             query = query.Where(combinedFilter);
         }
 
-        // Apply sorting if provided
         if (orderBy != null)
         {
             query = ascending ? query.OrderBy(orderBy) : query.OrderByDescending(orderBy);
         }
 
-        // Get paged result
         var totalCount = await query.CountAsync();
         var items = await query
+            .AsNoTracking()
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

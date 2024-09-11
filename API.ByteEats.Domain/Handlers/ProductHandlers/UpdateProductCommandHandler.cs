@@ -1,6 +1,7 @@
 ﻿using API.ByteEats.Domain.Entities;
 using API.ByteEats.Domain.Interfaces;
 using API.ByteEats.Domain.Interfaces.Repositories.Base;
+using API.ByteEats.Domain.Models;
 using API.ByteEats.Domain.Models.Notification;
 using API.ByteEats.Domain.Models.ProductCommands;
 
@@ -13,7 +14,7 @@ public class UpdateProductCommandHandler : BaseHandler<UpdateProductCommand, Pro
     {
     }
 
-    public override async Task<Product> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
+    public override async Task<Result<Product>> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
     {
         var product = await UnitOfWork.Products.GetById(request.Id);
 
@@ -21,7 +22,7 @@ public class UpdateProductCommandHandler : BaseHandler<UpdateProductCommand, Pro
         {
             NotificationService.AddNotification(NotificationMessages.Type.NotFound, nameof(Product),
                 request.Id.ToString());
-            return null;
+            return Result<Product>.Failure();
         }
 
         if (request.Name is not null) product.Name = request.Name;
@@ -33,6 +34,9 @@ public class UpdateProductCommandHandler : BaseHandler<UpdateProductCommand, Pro
 
         await UnitOfWork.SaveAsync();
 
-        return updatedProduct.Entity;
+        var response = updatedProduct.Entity;
+
+        return Result<Product>.Success(response);
+
     }
 }

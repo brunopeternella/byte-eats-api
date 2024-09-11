@@ -1,11 +1,12 @@
 ﻿using API.ByteEats.Domain.Interfaces;
 using API.ByteEats.Domain.Interfaces.Repositories.Base;
+using API.ByteEats.Domain.Models;
 using MediatR;
 
 namespace API.ByteEats.Domain.Handlers;
 
-public abstract class BaseHandler<TRequest, TResponse> : IRequestHandler<TRequest, TResponse>
-    where TRequest : IRequest<TResponse>
+public abstract class BaseHandler<TRequest, TResponse> : IRequestHandler<TRequest, Result<TResponse>>
+    where TRequest : IBaseRequest<TResponse>
 {
     protected readonly INotificationService NotificationService;
     protected readonly IUnitOfWork UnitOfWork;
@@ -16,5 +17,5 @@ public abstract class BaseHandler<TRequest, TResponse> : IRequestHandler<TReques
         NotificationService = notificationService;
     }
 
-    public abstract Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken);
+    public abstract Task<Result<TResponse>> Handle(TRequest request, CancellationToken cancellationToken);
 }

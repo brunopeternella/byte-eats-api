@@ -13,10 +13,10 @@ public class GetUserQueryHandler : BaseHandler<GetUsersQuery, PagedResult<User>>
     {
     }
 
-    public override async Task<PagedResult<User>> Handle(GetUsersQuery request, CancellationToken cancellationToken)
+    public override async Task<Result<PagedResult<User>>> Handle(GetUsersQuery request, CancellationToken cancellationToken)
     {
-        var users = await UnitOfWork.Users.GetAll(request.Page, request.PageSize);
+        var users = await UnitOfWork.Users.GetPagedByFilter(request.Page, request.PageSize);
 
-        return users;
+        return Result<PagedResult<User>>.Success(users);
     }
 }

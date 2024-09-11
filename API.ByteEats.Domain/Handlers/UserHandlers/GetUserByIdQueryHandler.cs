@@ -1,6 +1,7 @@
 ﻿using API.ByteEats.Domain.Entities;
 using API.ByteEats.Domain.Interfaces;
 using API.ByteEats.Domain.Interfaces.Repositories.Base;
+using API.ByteEats.Domain.Models;
 using API.ByteEats.Domain.Models.Notification;
 using API.ByteEats.Domain.Models.UserCommands;
 
@@ -13,7 +14,7 @@ public class GetUserByIdQueryHandler : BaseHandler<GetUserByIdQuery, User>
     {
     }
 
-    public override async Task<User> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
+    public override async Task<Result<User>> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
     {
         var user = await UnitOfWork.Users.GetById(request.Id);
 
@@ -21,9 +22,10 @@ public class GetUserByIdQueryHandler : BaseHandler<GetUserByIdQuery, User>
         {
             NotificationService.AddNotification(NotificationMessages.Type.NotFound, nameof(User),
                 request.Id.ToString());
-            return null;
+            return Result<User>.Failure();
+
         }
 
-        return user;
+        return Result<User>.Success(user);
     }
 }

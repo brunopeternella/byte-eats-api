@@ -6,11 +6,8 @@ namespace API.ByteEats.Controllers;
 
 public class UsersController : ApiController
 {
-    private readonly IMediator _mediator;
-
-    public UsersController(IMediator mediator)
+    public UsersController(IMediator mediator) : base(mediator)
     {
-        _mediator = mediator;
     }
 
     [HttpGet]
@@ -22,25 +19,31 @@ public class UsersController : ApiController
             Id = id
         };
 
-        var user = await _mediator.Send(command);
+        var user = await Mediator.Send(command);
 
-        return Ok(user);
+        if (!user.IsSuccess)
+            return BadRequestNotification();
+
+        return Ok(user.Value);
     }
 
     [HttpGet]
     public async Task<IActionResult> GetUsers([FromQuery] GetUsersQuery command)
     {
-        var users = await _mediator.Send(command);
+        var users = await Mediator.Send(command);
 
-        return Ok(users);
+        if (!users.IsSuccess)
+            return BadRequestNotification();
+
+        return Ok(users.Value);
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserCommand command)
     {
-        var user = await _mediator.Send(command);
+        var user = await Mediator.Send(command);
 
-        return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
+        return CreatedAtAction(nameof(GetUserById), new { id = user.Value.Id }, user.Value);
     }
 
     [HttpPut]
@@ -49,20 +52,29 @@ public class UsersController : ApiController
     {
         command.Id = id;
 
-        var user = await _mediator.Send(command);
+        var user = await Mediator.Send(command);
 
-        return NoContent();
+        if (!user.IsSuccess)
+            return BadRequestNotification();
+
+        return Ok(user.Value);
     }
 
     [HttpDelete]
     [Route("{id}")]
     public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
     {
-        var command = new DeleteUserCommand();
-        command.Id = id;
+        var command = new DeleteUserCommand
+        {
+            Id = id
+        };
 
-        var user = await _mediator.Send(command);
+        var user = await Mediator.Send(command);
 
-        return NoContent();
+        if (!user.IsSuccess)
+            return BadRequestNotification();
+
+        return Ok(user.Value);
     }
+
 }

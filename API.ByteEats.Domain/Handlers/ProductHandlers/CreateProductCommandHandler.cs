@@ -1,6 +1,7 @@
 ﻿using API.ByteEats.Domain.Entities;
 using API.ByteEats.Domain.Interfaces;
 using API.ByteEats.Domain.Interfaces.Repositories.Base;
+using API.ByteEats.Domain.Models;
 using API.ByteEats.Domain.Models.ProductCommands;
 
 namespace API.ByteEats.Domain.Handlers.ProductHandlers;
@@ -12,7 +13,7 @@ public class CreateProductCommandHandler : BaseHandler<CreateProductCommand, Pro
     {
     }
 
-    public override async Task<Product> Handle(CreateProductCommand request, CancellationToken cancellationToken)
+    public override async Task<Result<Product>> Handle(CreateProductCommand request, CancellationToken cancellationToken)
     {
         var product = new Product
         {
@@ -28,6 +29,6 @@ public class CreateProductCommandHandler : BaseHandler<CreateProductCommand, Pro
 
         await UnitOfWork.SaveAsync();
 
-        return addedProduct;
+        return Result<Product>.Success(addedProduct);;
     }
 }

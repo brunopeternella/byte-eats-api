@@ -1,6 +1,7 @@
 ﻿using API.ByteEats.Domain.Entities;
 using API.ByteEats.Domain.Interfaces;
 using API.ByteEats.Domain.Interfaces.Repositories.Base;
+using API.ByteEats.Domain.Models;
 using API.ByteEats.Domain.Models.Notification;
 using API.ByteEats.Domain.Models.UserCommands;
 
@@ -13,7 +14,7 @@ public class UpdateUserCommandHandler : BaseHandler<UpdateUserCommand, User>
     {
     }
 
-    public override async Task<User> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
+    public override async Task<Result<User>> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
     {
         var user = await UnitOfWork.Users.GetById(request.Id);
 
@@ -21,7 +22,7 @@ public class UpdateUserCommandHandler : BaseHandler<UpdateUserCommand, User>
         {
             NotificationService.AddNotification(NotificationMessages.Type.NotFound, nameof(User),
                 request.Id.ToString());
-            return null;
+            return Result<User>.Failure();
         }
 
         if (request.Name is not null) user.Name = request.Name;
@@ -30,6 +31,8 @@ public class UpdateUserCommandHandler : BaseHandler<UpdateUserCommand, User>
 
         await UnitOfWork.SaveAsync();
 
-        return updatedUser.Entity;
+        var response = updatedUser.Entity;
+
+        return Result<User>.Success(response);
     }
 }

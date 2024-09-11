@@ -2,24 +2,35 @@
 using API.ByteEats.Domain.Entities;
 using API.ByteEats.Domain.Interfaces;
 using API.ByteEats.Domain.Interfaces.Repositories.Base;
+using API.ByteEats.Domain.Models;
 using API.ByteEats.Domain.Models.Notification;
 using API.ByteEats.Domain.Models.OrderCommands;
+using API.ByteEats.Domain.Models.OrderCommands.Responses;
+using MediatR;
 
 namespace API.ByteEats.Domain.Handlers.OrderHandlers;
 
-public class CreateOrderCommandHandler : BaseHandler<CreateOrderCommand, CreateOrderCommandResponse>
+public class CreateOrderCommandHandler : BaseHandler<CreateOrderCommand, OrderResponse>
 {
     public CreateOrderCommandHandler(IUnitOfWork unitOfWork, INotificationService notificationService) : base(
         unitOfWork, notificationService)
     {
     }
 
-    public override async Task<CreateOrderCommandResponse> Handle(CreateOrderCommand request,
+    public override async Task<Result<OrderResponse>> Handle(CreateOrderCommand request,
         CancellationToken cancellationToken)
     {
-        var user = await UnitOfWork.Users.GetById(request.UserId);
-        var orderItemsResponse = new List<OrderItemResponseDTO>();
+        var orderItems = new List<OrderItem>();
         decimal totalValue = 0;
+
+        var user = await UnitOfWork.Users.GetById(request.UserId);
+
+        if (user is null)
+        {
+            NotificationService.AddNotification(NotificationMessages.Type.NotFound, nameof(User),
+                user.Email);
+            return Result<OrderResponse>.Failure();
+        }
 
         var order = new Order
         {
@@ -37,46 +48,30 @@ public class CreateOrderCommandHandler : BaseHandler<CreateOrderCommand, CreateO
             {
                 NotificationService.AddNotification(NotificationMessages.Type.NotFound, nameof(Product),
                     item.ProductId.ToString());
+                continue;
             }
-            else
+
+            var orderItem = new OrderItem
             {
-                var orderItem = new OrderItem
-                {
-                    OrderId = order.Id,
-                    ProductId = product.Id,
-                    Quantity = item.Quantity
-                };
+                OrderId = order.Id,
+                ProductId = product.Id,
+                Quantity = item.Quantity
+            };
 
-                await UnitOfWork.OrderItems.Create(orderItem);
+            await UnitOfWork.OrderItems.Create(orderItem);
 
-                orderItemsResponse.Add(new OrderItemResponseDTO
-                {
-                    Id = orderItem.Id,
-                    ProductId = product.Id,
-                    ProductName = product.Name,
-                    UnitValue = product.Price,
-                    Quantity = item.Quantity
-                });
+            orderItems.Add(orderItem);
 
-                totalValue += item.Quantity * product.Price;
-            }
+            totalValue += item.Quantity * product.Price;
         }
 
         if (NotificationService.HasNotifications())
-            return null;
-
-        var response = new CreateOrderCommandResponse
-        {
-            Id = order.Id,
-            UserEmail = user.Email,
-            UserName = user.Name,
-            WasPaid = order.WasPaid,
-            TotalValue = totalValue,
-            Items = orderItemsResponse
-        };
+            return Result<OrderResponse>.Failure();
 
         await UnitOfWork.SaveAsync();
 
-        return response;
+        var response = new OrderResponse(order, orderItems);
+
+        return Result<OrderResponse>.Success(response);
     }
 }

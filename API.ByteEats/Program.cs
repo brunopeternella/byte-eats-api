@@ -6,13 +6,17 @@ using API.ByteEats.Infrastructure.Repositories.Base;
 using API.ByteEats.Middlewares;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+    {
+        c.SwaggerDoc("v1", new OpenApiInfo { Title = "API.ByteEats", Version = "v1" });
+    });
 
 builder.Services.AddControllers();
 
@@ -44,9 +48,23 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate();
+}
+
+const string routePrefix = "api/byte-eats/swagger";
+
+app.UseSwagger(c => c.RouteTemplate = routePrefix + "/{documentName}/swagger.json");
+
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint($"/{routePrefix}/v1/swagger.json", "API.ByteEats");
+    c.RoutePrefix = routePrefix;
+});
 
 app.UseMiddleware<NotificationValidationMiddleware>();
 

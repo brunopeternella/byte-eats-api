@@ -1,6 +1,7 @@
 ﻿using API.ByteEats.Domain.Entities;
 using API.ByteEats.Domain.Interfaces;
 using API.ByteEats.Domain.Interfaces.Repositories.Base;
+using API.ByteEats.Domain.Models;
 using API.ByteEats.Domain.Models.UserCommands;
 
 namespace API.ByteEats.Domain.Handlers.UserHandlers;
@@ -12,7 +13,7 @@ public class CreateUserCommandHandler : BaseHandler<CreateUserCommand, User>
     {
     }
 
-    public override async Task<User> Handle(CreateUserCommand request, CancellationToken cancellationToken)
+    public override async Task<Result<User>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
         var user = new User
         {
@@ -26,6 +27,6 @@ public class CreateUserCommandHandler : BaseHandler<CreateUserCommand, User>
 
         await UnitOfWork.SaveAsync();
 
-        return addedUser;
+        return Result<User>.Success(addedUser);
     }
 }

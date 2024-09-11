@@ -1,6 +1,7 @@
 ﻿using API.ByteEats.Domain.Entities;
 using API.ByteEats.Domain.Interfaces;
 using API.ByteEats.Domain.Interfaces.Repositories.Base;
+using API.ByteEats.Domain.Models;
 using API.ByteEats.Domain.Models.Notification;
 using API.ByteEats.Domain.Models.ProductCommands;
 
@@ -13,7 +14,7 @@ public class GetProductByIdQueryHandler : BaseHandler<GetProductByIdQuery, Produ
     {
     }
 
-    public override async Task<Product> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
+    public override async Task<Result<Product>> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
     {
         var product = await UnitOfWork.Products.GetById(request.Id);
 
@@ -21,9 +22,9 @@ public class GetProductByIdQueryHandler : BaseHandler<GetProductByIdQuery, Produ
         {
             NotificationService.AddNotification(NotificationMessages.Type.NotFound, nameof(product),
                 request.Id.ToString());
-            return null;
+            return Result<Product>.Failure();
         }
 
-        return product;
+        return Result<Product>.Success(product);;
     }
 }
