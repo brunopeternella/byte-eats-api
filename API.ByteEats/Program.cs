@@ -35,7 +35,7 @@ builder.Services.Configure<IdentityOptions>(options =>
 builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(Environment.GetEnvironmentVariable("connectionstring")));
+    options.UseSqlServer(builder.Configuration["CONNECTION_STRING"]));
 
 builder.Services.AddMediatR(configuration =>
 {
