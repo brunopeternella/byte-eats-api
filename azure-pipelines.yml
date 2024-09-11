@@ -1,0 +1,63 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  name: cx-ubuntu
+
+stages:
+  - stage: PreBuild
+    displayName: Pré Build
+    jobs:
+      - job: BuildAndTest
+        displayName: Build & Test
+        steps:
+          - task: UseDotNet@2
+            displayName: Install .NET SDK
+            inputs:
+              packageType: 'sdk'
+              version: '8.x'          
+          - task: DotNetCoreCLI@2
+            displayName: Restore
+            inputs:
+              command: 'restore'
+
+          - task: DotNetCoreCLI@2
+            displayName: Build
+            inputs:
+              command: 'build'
+              projects: 'API.ByteEats/API.ByteEats.csproj'
+              arguments: '-c Release'
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: 'test'
+
+  - stage: Build
+    displayName: Build
+    jobs:
+      - job: DockerBuild
+        displayName: Docker Build & Publish
+        steps:
+          - task: Docker@2
+            displayName: Docker Build
+            inputs:
+              command: build
+              Dockerfile: './Dockerfile'
+              buildContext: '.'
+              repository: byte-eats-api
+              tags: 'latest'
+              
+          - task: CmdLine@2
+            displayName: Docker Save
+            inputs:
+              script: |
+                docker save byte-eats-api:latest | gzip > ./byte-eats-api-latest.tar.gz
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: 'byte-eats-api-latest.tar.gz'
+              artifactName: 'docker-image'
+            displayName: 'Publish Docker Image as tar.gz to Pipeline Artifacts'
