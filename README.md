@@ -38,14 +38,16 @@ Esta é uma API desenvolvida em .NET que implementa operações CRUD básicas. A
 
 5. **Acesse a Documentação Swagger**
 
-    Navegue até `http://localhost:5000/swagger` para interagir com a API.
+    Navegue até `http://localhost:5286/api/byte-eats/swagger` para interagir com a API.
 
 ## Estrutura do Projeto
 
-- `Controllers/` - Controladores para gerenciar pedidos.
-- `Models/` - Modelos de dados.
-- `Data/` - Contexto do banco de dados e configurações do Entity Framework.
-- `Migrations/` - Scripts de migração do banco de dados.
+Projeto estruturado no formato Domain-Driven Design (DDD).
+
+- `API.ByteEats/` - Ponto de entrada da aplicação: Controllers e Middlewares.
+- `API.ByteEats.Domain/` - DTOs, Entidades, Enums, Extensions, Handlers, Interfaces, Models, Services, Validators.
+- `API.ByteEats.Infrastructure/` - Contexto do banco de dados, repositórios e scripts de migration.
+- `API.ByteEats.Tests/` - Implementação de testes. (Não implementado nesse projeto)
 
 ## Design Patterns
 
@@ -54,8 +56,41 @@ Esta é uma API desenvolvida em .NET que implementa operações CRUD básicas. A
 
 ## Publicação
 
-A API está publicada no Azure e acessível em `https://suaapi.azurewebsites.net`.
+A API está publicada em minha VPS e acessível em `https://crossnexus.tech/api/byte-eats/swagger/index.html`.
 
-## Contribuição
+## Pipeline (CI/CD)
 
-Sinta-se à vontade para abrir issues ou pull requests para melhorias.
+É possível analisar o script responsável pelo CI no arquivo `azure-pipelines.yml`, na raiz do projeto.
+
+### CI
+
+#### Estágios
+
+##### Pré Build
+
+- **Job**: `BuildAndTest`
+  - **Passos**:
+    - Instalar .NET SDK 8.x
+    - Restaurar pacotes
+    - Compilar projeto (`API.ByteEats.csproj`)
+    - Executar testes
+
+##### Build
+
+- **Job**: `DockerBuild`
+  - **Passos**:
+    - Construir imagem Docker (`byte-eats-api:latest`)
+    - Salvar imagem como `byte-eats-api-latest.tar.gz`
+    - Publicar artefato Docker como resultado da Run
+
+### CD
+
+O processo de CD é disparado após o artefato (imagem docker) ser gerado pelo CI.
+
+Foram utilizados conceitos simples de publicação no servidor.
+
+- Baixa a imagem do Azure para o Agent
+- Carrega o .tar.gz como uma docker image
+- Para o container atual
+- Remove o container atual
+- Sobe um novo container com a nova imagem
