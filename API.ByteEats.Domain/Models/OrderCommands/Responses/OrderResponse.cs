@@ -6,13 +6,42 @@ namespace API.ByteEats.Domain.Models.OrderCommands.Responses;
 
 public class OrderResponse
 {
+    /// <summary>
+    /// Order ID.
+    /// </summary>
     public Guid Id { get; set; }
+
+    /// <summary>
+    /// User name.
+    /// </summary>
     public string UserName { get; set; }
+
+    /// <summary>
+    /// User email.
+    /// </summary>
     public string UserEmail { get; set; }
+
+    /// <summary>
+    /// Was order paid.
+    /// </summary>
     public bool WasPaid { get; set; }
+
+    /// <summary>
+    /// Total order value. <br/>
+    /// Sum of all products price * order item quantity.
+    /// </summary>
     public decimal TotalValue { get; set; }
+
+    /// <summary>
+    /// Date time of order creation.
+    /// </summary>
     public DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// Date time of order update.
+    /// </summary>
     public DateTime? UpdatedAt { get; set; }
+
     public OrderStatus Status { get; set; }
     public IEnumerable<OrderItemResponseDTO> Items { get; set; }
 

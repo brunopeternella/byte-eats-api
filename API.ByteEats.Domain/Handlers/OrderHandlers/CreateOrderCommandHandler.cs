@@ -29,7 +29,7 @@ public class CreateOrderCommandHandler : BaseHandler<CreateOrderCommand, OrderRe
         if (user is null)
         {
             NotificationService.AddNotification(NotificationMessages.Type.NotFound, nameof(User),
-                user.Email);
+                request.UserId.ToString());
             return Result<OrderResponse>.Failure();
         }
 

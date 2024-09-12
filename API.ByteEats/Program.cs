@@ -1,3 +1,4 @@
+using System.Reflection;
 using API.ByteEats.Domain.Interfaces;
 using API.ByteEats.Domain.Interfaces.Repositories.Base;
 using API.ByteEats.Domain.Services;
@@ -16,6 +17,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
     {
         c.SwaggerDoc("v1", new OpenApiInfo { Title = "API.ByteEats", Version = "v1" });
+
+        var webApiXmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var webApiXmlPath = Path.Combine(AppContext.BaseDirectory, webApiXmlFile);
+        c.IncludeXmlComments(webApiXmlPath);
+
+        var domainApiXmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.Domain.xml";
+        var domainApiXmlPath = Path.Combine(AppContext.BaseDirectory, domainApiXmlFile);
+        c.IncludeXmlComments(domainApiXmlPath);
     });
 
 builder.Services.AddControllers();

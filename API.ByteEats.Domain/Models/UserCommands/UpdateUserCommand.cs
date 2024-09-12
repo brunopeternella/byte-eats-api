@@ -9,5 +9,8 @@ public class UpdateUserCommand : IBaseRequest<User>
 {
     [JsonIgnore] public Guid Id { get; set; }
 
+    /// <summary>
+    /// User name.
+    /// </summary>
     public string? Name { get; set; }
 }
