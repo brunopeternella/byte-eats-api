@@ -1,20 +1,20 @@
 version: '3.8'
 
 services:
-  api:
-    image: byte-eats-api:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "12001:8080"
-    # environment:
-    #   - ASPNETCORE_ENVIRONMENT=Production
-    #   - ConnectionStrings__DefaultConnection=Server=172.22.35.172,12000;Database=ByteEats;User Id=sa;Password=ByteEats1;TrustServerCertificate=True;
-    depends_on:
-      - db
-    networks:
-      - app-network
+  # api:
+  #   image: byte-eats-api:latest
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "12005:8080"
+  #   # environment:
+  #   #   - ASPNETCORE_ENVIRONMENT=Production
+  #   #   - ConnectionStrings__DefaultConnection=Server=172.22.35.172,12000;Database=ByteEats;User Id=sa;Password=ByteEats1;TrustServerCertificate=True;
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - app-network
 
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest

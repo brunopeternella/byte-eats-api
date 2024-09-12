@@ -1,5 +1,6 @@
 ﻿using API.ByteEats.Domain.DTOs;
 using API.ByteEats.Domain.Entities;
+using API.ByteEats.Domain.Enums;
 using API.ByteEats.Domain.Interfaces;
 using API.ByteEats.Domain.Interfaces.Repositories.Base;
 using API.ByteEats.Domain.Models;
@@ -35,7 +36,8 @@ public class CreateOrderCommandHandler : BaseHandler<CreateOrderCommand, OrderRe
         var order = new Order
         {
             UserId = user.Id,
-            WasPaid = true
+            WasPaid = true,
+            Status = request.Status ?? OrderStatus.New
         };
 
         await UnitOfWork.Orders.Create(order);

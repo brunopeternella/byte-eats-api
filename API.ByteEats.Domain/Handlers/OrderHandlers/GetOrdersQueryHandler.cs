@@ -19,14 +19,11 @@ public class GetOrdersQueryHandler : BaseHandler<GetOrdersQuery, PagedResult<Ord
         CancellationToken cancellationToken)
     {
         List<Expression<Func<Order, bool>>> filters = new();
-/*
-        if (request.Category.HasValue)
-            filters.Add(product => product.Category.Equals(request.Category));
 
-        if(request.Promotion.HasValue)
-            filters.Add(product => product.Promotion.Equals(request.Promotion));
-*/
-        var pagedOrders = await UnitOfWork.Orders.GetPagedByFilter(request.Page, request.PageSize);
+        if (request.Status.HasValue)
+            filters.Add(order => order.Status.Equals(request.Status));
+
+        var pagedOrders = await UnitOfWork.Orders.GetPagedByFilter(request.Page, request.PageSize, filters);
 
         var ordersResponse = new List<OrderResponse>();
 
@@ -39,6 +36,6 @@ public class GetOrdersQueryHandler : BaseHandler<GetOrdersQuery, PagedResult<Ord
         var response = new PagedResult<OrderResponse>(ordersResponse, pagedOrders.TotalCount,
             pagedOrders.Page, pagedOrders.PageSize);
 
-        return Result<PagedResult<OrderResponse>>.Success(response);;
+        return Result<PagedResult<OrderResponse>>.Success(response);
     }
 }

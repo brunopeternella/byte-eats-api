@@ -1,4 +1,5 @@
 ﻿using API.ByteEats.Domain.Entities;
+using API.ByteEats.Domain.Enums;
 using API.ByteEats.Domain.Interfaces;
 using API.ByteEats.Domain.Interfaces.Repositories.Base;
 using API.ByteEats.Domain.Models;
@@ -26,6 +27,7 @@ public class UpdateOrderCommandHandler : BaseHandler<UpdateOrderCommand, UpdateO
         }
 
         if (request.WasPaid.HasValue) order.WasPaid = (bool)request.WasPaid;
+        if (request.Status.HasValue) order.Status = (OrderStatus)request.Status;
 
         var updatedOrder = UnitOfWork.Orders.Update(order);
 
